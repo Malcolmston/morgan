@@ -1,0 +1,15 @@
+# Binaries
+morgan
+*.exe
+*.out
+
+# Test cache
+*.test
+*.prof
+
+# IDE
+.idea/
+.vscode/
+
+# Module cache
+vendor/
