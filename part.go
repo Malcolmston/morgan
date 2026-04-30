@@ -10,7 +10,6 @@ import (
 // IP represents an IP address as a slice of bytes.
 type IP []byte
 
-// String returns the string representation of the IP address.
 func (ip IP) String() string {
 	return net.IP(ip).String()
 }
@@ -24,7 +23,7 @@ const (
 	immediate Options = "immediate"
 
 	// skip is a function to determine if logging is skipped, defaults to false.
-	// Called as skip(req, res).
+	// Called as skip(req, status).
 	skip Options = "skip"
 
 	// stream is the output stream for writing log lines, defaults to os.Stdout.
@@ -44,9 +43,8 @@ const (
 	Common Format = `:remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length]`
 
 	// Dev is concise output colored by response status, for development use.
-	// :status is green for 2xx, cyan for 3xx, yellow for 4xx, red for 5xx.
-	//   :method :url :status :response-time ms - :res[content-length]
-	Dev Format = `:method :url :status :response-time ms - :res[content-length]`
+	// :status is green for 2xx, cyan for 3xx, yellow for 4xx, red for 5xx, uncolored for 1xx.
+	Dev Format = "dev"
 
 	// Short is shorter than default, also including response time.
 	//   :remote-addr :remote-user :method :url HTTP/:http-version :status :res[content-length] - :response-time ms
@@ -71,11 +69,15 @@ type Config struct {
 
 	// Stream is the output writer for log lines. Defaults to os.Stdout.
 	Stream io.Writer
+
+	// Buffer enables write buffering. Log lines are flushed to Stream in
+	// batches at this interval. Zero disables buffering.
+	Buffer time.Duration
 }
 
 // Log holds all token values captured for a single HTTP request/response cycle.
 type Log struct {
-	// :date — time the request was received; use :date[clf], :date[iso], or :date[web].
+	// :date — time the log line is written; use :date[clf], :date[iso], or :date[web].
 	DATE time.Time
 	// :http-version — HTTP protocol version (e.g. "1.1").
 	HTTPVersion string
