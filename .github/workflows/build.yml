@@ -1,10 +1,9 @@
-name: Go
+name: Build
 
 on:
-  push:
-    branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
+  workflow_call:
 
 jobs:
   build:
@@ -24,12 +23,3 @@ jobs:
 
       - name: Vet
         run: go vet ./...
-
-      - name: Test
-        run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
-
-      - name: Upload coverage
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage
-          path: coverage.out

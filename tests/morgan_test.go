@@ -118,25 +118,40 @@ func TestNew_Immediate(t *testing.T) {
 }
 
 func TestNew_Buffer(t *testing.T) {
-	var buf strings.Builder
+	// strings.Builder is not thread-safe; use syncWriter so the timer goroutine
+	// that calls bufferStream.flush() and the test goroutine don't race.
+	var mu sync.Mutex
+	var lines []string
+	sw := &syncWriter{mu: &mu, lines: &lines}
+
 	interval := 50 * time.Millisecond
 	mw := morgan.New(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(200) }),
 		morgan.Tiny,
-		morgan.Config{Stream: &buf, Buffer: interval},
+		morgan.Config{Stream: sw, Buffer: interval},
 	)
 
 	mw.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/buf", nil))
 
-	// should not be written yet
-	if buf.Len() != 0 {
-		t.Errorf("buffered: expected no output immediately, got: %q", buf.String())
+	// should not be flushed yet
+	mu.Lock()
+	immediate := len(lines)
+	mu.Unlock()
+	if immediate != 0 {
+		t.Errorf("buffered: expected no output immediately, got %d line(s)", immediate)
 	}
 
-	// wait for flush
+	// wait for the buffer to flush
 	time.Sleep(interval * 3)
-	if !strings.Contains(buf.String(), "GET") {
-		t.Errorf("buffered: expected log after flush, got: %q", buf.String())
+	mu.Lock()
+	count, first := len(lines), ""
+	if count > 0 {
+		first = lines[0]
+	}
+	mu.Unlock()
+
+	if count == 0 || !strings.Contains(first, "GET") {
+		t.Errorf("buffered: expected log after flush, got %d line(s), first=%q", count, first)
 	}
 }
 
