@@ -14,22 +14,6 @@ func (ip IP) String() string {
 	return net.IP(ip).String()
 }
 
-// Options keys accepted by Config.
-type Options string
-
-const (
-	// immediate writes the log line on request instead of response. The request will
-	// be logged even if the server crashes, but response data cannot be logged.
-	immediate Options = "immediate"
-
-	// skip is a function to determine if logging is skipped, defaults to false.
-	// Called as skip(req, status).
-	skip Options = "skip"
-
-	// stream is the output stream for writing log lines, defaults to os.Stdout.
-	stream Options = "stream"
-)
-
 // Format is a predefined or custom log format string. Tokens use :name or :name[arg] syntax.
 type Format string
 

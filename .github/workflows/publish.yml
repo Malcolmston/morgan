@@ -3,7 +3,7 @@ name: Publish
 on:
   push:
     tags:
-      - "v*"
+      - "*"
 
 jobs:
   build:
@@ -32,17 +32,23 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      - name: Download coverage report
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage
+      - name: Trigger Go module proxy indexing
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          # The proxy escapes uppercase letters as !lowercase
+          GOPROXY=https://proxy.golang.org GONOSUMDB=* \
+            go list -m github.com/Malcolmston/morgan@${VERSION}
 
-      - name: Verify module (go list triggers proxy indexing)
-        run: GONOSUMCHECK=* go list -m github.com/Malcolmston/morgan@${{ github.ref_name }}
+      - name: Trigger pkg.go.dev fetch
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          curl -sf "https://pkg.go.dev/github.com/Malcolmston/morgan@${VERSION}" \
+            -o /dev/null || true
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
-          files: coverage.out
           make_latest: true
