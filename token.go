@@ -149,4 +149,13 @@ func init() {
 		}
 		return result
 	})
+
+	// :incoming — size of the incoming request body in bytes from Content-Length.
+	// Returns "-" if the header is absent or the body size is unknown.
+	Token("incoming", func(_ *http.Request, log Log, _ ...string) string {
+		if log.INCOMING < 0 {
+			return ""
+		}
+		return fmt.Sprintf("%d", log.INCOMING)
+	})
 }
