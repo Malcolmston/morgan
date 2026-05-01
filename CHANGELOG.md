@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-04-30
+
+### Added
+
+- `morgan.JSON` format — built-in structured logging as a single-line JSON object with fields `date`, `method`, `url`, `status`, `responseTime`, `totalTime`, `remoteAddr`, `userAgent`, and `contentLength`
+- `:incoming` token — incoming request body size in bytes from `Content-Length`; stored on `Log.INCOMING` and returns `"-"` when the header is absent
+- `.golangci.yml` — pins linter configuration for consistent CI lint behaviour across golangci-lint versions
+
+### Fixed
+
+- `Dev` format no longer emits ANSI colour codes when the output stream is not a terminal (e.g. piped to a file or log aggregator)
+
+### Changed
+
+- Added `golang.org/x/term` dependency for TTY detection
+
+---
+
 ## [1.0.0] - 2026-04-30
 
 ### Added
