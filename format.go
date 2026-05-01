@@ -1,6 +1,10 @@
 package morgan
 
-import "sync"
+import (
+	"fmt"
+	"net/http"
+	"sync"
+)
 
 var (
 	formatMu  sync.RWMutex
@@ -42,10 +46,36 @@ func getFormatFunc(nameOrFmt string) FormatFunc {
 	return Compile(nameOrFmt)
 }
 
+func jsonFormatLine(r *http.Request, log Log) string {
+	status := "-"
+	if log.STATUS != 0 {
+		status = fmt.Sprintf("%d", log.STATUS)
+	}
+	contentLength := "-"
+	if log.RESPONSE_HEADERS != nil {
+		if v := log.RESPONSE_HEADERS.Get("Content-Length"); v != "" {
+			contentLength = v
+		}
+	}
+	return fmt.Sprintf(
+		`{"date":%q,"method":%q,"url":%q,"status":%s,"responseTime":%s,"totalTime":%s,"remoteAddr":%q,"userAgent":%q,"contentLength":%s}`,
+		log.DATE.UTC().Format("2006-01-02T15:04:05.000Z07:00"),
+		log.METHOD,
+		log.URL,
+		status,
+		FormatDuration(log.RESPONSE_TIME, 3),
+		FormatDuration(log.TOTAL_TIME, 3),
+		log.REMOTE_IP.String(),
+		log.USER_AGENT,
+		contentLength,
+	)
+}
+
 func init() {
 	RegisterFormat("combined", string(Combined))
 	RegisterFormat("common", string(Common))
 	RegisterFormat("short", string(Short))
 	RegisterFormat("tiny", string(Tiny))
 	RegisterFormatFunc("dev", devFormatLine)
+	RegisterFormatFunc("json", jsonFormatLine)
 }
