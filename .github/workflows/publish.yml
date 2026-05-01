@@ -32,20 +32,18 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      - name: Trigger Go module proxy indexing
+      - name: Publish to pkg.go.dev via proxy
         env:
           VERSION: ${{ github.ref_name }}
         run: |
-          # The proxy escapes uppercase letters as !lowercase
-          GOPROXY=https://proxy.golang.org GONOSUMDB=* \
-            go list -m github.com/Malcolmston/morgan@${VERSION}
-
-      - name: Trigger pkg.go.dev fetch
-        env:
-          VERSION: ${{ github.ref_name }}
-        run: |
-          curl -sf "https://pkg.go.dev/github.com/Malcolmston/morgan@${VERSION}" \
-            -o /dev/null || true
+          # Request the version info endpoint on proxy.golang.org.
+          # This is the canonical way to add a package to pkg.go.dev per
+          # https://pkg.go.dev/about#adding-a-package — the proxy indexes
+          # the module and pkg.go.dev picks it up from the module index.
+          # Note: uppercase letters in module paths are escaped as !lowercase.
+          curl -sfL \
+            "https://proxy.golang.org/github.com/!malcolmston/morgan/@v/${VERSION}.info" \
+            -o /dev/null
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
