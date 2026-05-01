@@ -3,10 +3,22 @@ package morgan
 import (
 	"fmt"
 	"io"
+	"os"
 	"strings"
 	"sync"
 	"time"
+
+	"golang.org/x/term"
 )
+
+// isTerminal reports whether w is a file descriptor attached to a terminal.
+func isTerminal(w io.Writer) bool {
+	f, ok := w.(*os.File)
+	if !ok {
+		return false
+	}
+	return term.IsTerminal(int(f.Fd()))
+}
 
 // FormatDuration formats a duration as milliseconds with the given number of decimal digits.
 func FormatDuration(d time.Duration, digits int) string {

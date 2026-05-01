@@ -2,6 +2,7 @@ package morgan
 
 import (
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"os"
@@ -40,6 +41,7 @@ func FromRequest(r *http.Request, status int, responseTime, totalTime time.Durat
 		TOTAL_TIME:     totalTime,
 		URL:            url,
 		USER_AGENT:     r.Header.Get("User-Agent"),
+		INCOMING:       r.ContentLength,
 	}
 }
 
@@ -85,14 +87,21 @@ func (rr *responseRecorder) Write(b []byte) (int, error) {
 //	mux := http.NewServeMux()
 //	http.ListenAndServe(":8080", morgan.New(mux, morgan.Dev, morgan.Config{}))
 func New(next http.Handler, format Format, cfg Config) http.Handler {
-	formatFn := getFormatFunc(string(format))
-
-	out := cfg.Stream
-	if out == nil {
-		out = os.Stdout
+	rawOut := cfg.Stream
+	if rawOut == nil {
+		rawOut = os.Stdout
 	}
+
+	formatFn := getFormatFunc(string(format))
+	// Dev colours are only useful in a real terminal; fall back to plain output
+	// when piping to a file or another process.
+	if format == Dev && !isTerminal(rawOut) {
+		formatFn = Compile(":method :url :status :response-time ms - :res[content-length]")
+	}
+
+	out := io.Writer(rawOut)
 	if cfg.Buffer > 0 {
-		out = newBufferStream(out, cfg.Buffer)
+		out = newBufferStream(rawOut, cfg.Buffer)
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

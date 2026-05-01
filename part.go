@@ -37,6 +37,9 @@ const (
 	// Tiny is the minimal output.
 	//   :method :url :status :res[content-length] - :response-time ms
 	Tiny Format = `:method :url :status :res[content-length] - :response-time ms`
+
+	// JSON emits each request as a single-line JSON object.
+	JSON Format = "json"
 )
 
 // Config holds the options for a morgan middleware instance.
@@ -89,4 +92,6 @@ type Log struct {
 	URL string
 	// :user-agent — User-Agent header.
 	USER_AGENT string
+	// :incoming — size of the incoming request body in bytes (-1 if unknown).
+	INCOMING int64
 }
