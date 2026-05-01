@@ -45,7 +45,7 @@ func parseFormat(format string) []segment {
 // the live registry at render time, so tokens registered after Compile is called
 // are still visible.
 //
-// Token syntax: :name or :name[arg]
+// Token syntax: :name or :name[arg].
 func Compile(format string) FormatFunc {
 	segs := parseFormat(format)
 	return func(r *http.Request, log Log) string {
