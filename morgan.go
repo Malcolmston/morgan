@@ -12,7 +12,10 @@ import (
 // FromRequest populates a Log from an incoming HTTP request and timing information.
 // RESPONSE_HEADERS must be set by the caller after the handler runs.
 func FromRequest(r *http.Request, status int, responseTime, totalTime time.Duration) Log {
-	remoteIP, _, _ := net.SplitHostPort(r.RemoteAddr)
+	remoteIP := r.RemoteAddr
+	if host, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
+		remoteIP = host
+	}
 	if fwd := r.Header.Get("X-Forwarded-For"); fwd != "" {
 		remoteIP = fwd
 	}
