@@ -32,18 +32,13 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      - name: Publish to pkg.go.dev via proxy
+      - name: Notify Go proxy
         env:
           VERSION: ${{ github.ref_name }}
         run: |
-          # Request the version info endpoint on proxy.golang.org.
-          # This is the canonical way to add a package to pkg.go.dev per
-          # https://pkg.go.dev/about#adding-a-package — the proxy indexes
-          # the module and pkg.go.dev picks it up from the module index.
-          # Note: uppercase letters in module paths are escaped as !lowercase.
-          curl -sfL \
-            "https://proxy.golang.org/github.com/!malcolmston/morgan/@v/${VERSION}.info" \
-            -o /dev/null
+          # Canonical step from https://go.dev/doc/modules/publishing —
+          # prompts the Go proxy to index the new version.
+          GOPROXY=proxy.golang.org go list -m github.com/Malcolmston/morgan@${VERSION}
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
