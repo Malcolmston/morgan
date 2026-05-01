@@ -89,4 +89,6 @@ type Log struct {
 	URL string
 	// :user-agent — User-Agent header.
 	USER_AGENT string
+	// :incoming — size of the incoming request body in bytes (-1 if unknown).
+	INCOMING int64
 }
