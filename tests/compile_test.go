@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/Malcolmston/morgan"
+	"github.com/malcolmston/morgan"
 )
 
 func TestCompile_Literal(t *testing.T) {

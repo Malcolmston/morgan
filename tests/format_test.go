@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Malcolmston/morgan"
+	"github.com/malcolmston/morgan"
 )
 
 func TestRegisterFormat_StringLookup(t *testing.T) {

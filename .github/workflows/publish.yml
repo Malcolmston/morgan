@@ -38,7 +38,7 @@ jobs:
         run: |
           # Canonical step from https://go.dev/doc/modules/publishing —
           # prompts the Go proxy to index the new version.
-          GOPROXY=proxy.golang.org go list -m github.com/Malcolmston/morgan@${VERSION}
+          GOPROXY=proxy.golang.org go list -m github.com/malcolmston/morgan@${VERSION}
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2

@@ -27,7 +27,7 @@ jobs:
           cache: true
 
       - name: Test with race detector
-        run: go test -race -coverprofile=coverage.out -covermode=atomic -coverpkg=github.com/Malcolmston/morgan ./...
+        run: go test -race -coverprofile=coverage.out -covermode=atomic -coverpkg=github.com/malcolmston/morgan ./...
 
       - name: Coverage summary
         run: go tool cover -func=coverage.out

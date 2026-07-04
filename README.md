@@ -1,16 +1,16 @@
 # morgan
 
-[![Build](https://github.com/Malcolmston/morgan/actions/workflows/build.yml/badge.svg)](https://github.com/Malcolmston/morgan/actions/workflows/build.yml)
-[![Test](https://github.com/Malcolmston/morgan/actions/workflows/test.yml/badge.svg)](https://github.com/Malcolmston/morgan/actions/workflows/test.yml)
-[![Lint](https://github.com/Malcolmston/morgan/actions/workflows/lint.yml/badge.svg)](https://github.com/Malcolmston/morgan/actions/workflows/lint.yml)
-[![Go Reference](https://pkg.go.dev/badge/github.com/Malcolmston/morgan.svg)](https://pkg.go.dev/github.com/Malcolmston/morgan)
+[![Build](https://github.com/malcolmston/morgan/actions/workflows/build.yml/badge.svg)](https://github.com/malcolmston/morgan/actions/workflows/build.yml)
+[![Test](https://github.com/malcolmston/morgan/actions/workflows/test.yml/badge.svg)](https://github.com/malcolmston/morgan/actions/workflows/test.yml)
+[![Lint](https://github.com/malcolmston/morgan/actions/workflows/lint.yml/badge.svg)](https://github.com/malcolmston/morgan/actions/workflows/lint.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/malcolmston/morgan.svg)](https://pkg.go.dev/github.com/malcolmston/morgan)
 
 HTTP request logger middleware for Go — a port of the Node.js [morgan](https://github.com/expressjs/morgan) library.
 
 ## Installation
 
 ```sh
-go get github.com/Malcolmston/morgan@latest
+go get github.com/malcolmston/morgan@latest
 ```
 
 ## Quick start
@@ -20,7 +20,7 @@ package main
 
 import (
     "net/http"
-    "github.com/Malcolmston/morgan"
+    "github.com/malcolmston/morgan"
 )
 
 func main() {

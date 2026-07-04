@@ -1,3 +1,3 @@
-module github.com/Malcolmston/morgan
+module github.com/malcolmston/morgan
 
-go 1.24
+go 1.23

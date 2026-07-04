@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Malcolmston/morgan"
+	"github.com/malcolmston/morgan"
 )
 
 func TestNew_LogsToStream(t *testing.T) {

@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Malcolmston/morgan"
+	"github.com/malcolmston/morgan"
 )
 
 // compile1 compiles a single-token format and renders it against r and log.
