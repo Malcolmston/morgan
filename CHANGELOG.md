@@ -1,42 +1,34 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to this project are documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.1] - 2026-04-30
+## [Unreleased]
 
+## [1.0.2] - 2026-07-04
 ### Added
-
-- `morgan.JSON` format — built-in structured logging as a single-line JSON object with fields `date`, `method`, `url`, `status`, `responseTime`, `totalTime`, `remoteAddr`, `userAgent`, and `contentLength`
-- `:incoming` token — incoming request body size in bytes from `Content-Length`; stored on `Log.INCOMING` and returns `"-"` when the header is absent
-- `.golangci.yml` — pins linter configuration for consistent CI lint behaviour across golangci-lint versions
-
-### Fixed
-
-- `Dev` format no longer emits ANSI colour codes when the output stream is not a terminal (e.g. piped to a file or log aggregator)
-
+- Automated releases (VERSION-driven tags + GitHub Releases, moving `stable` tag).
+- CodeQL, benchmark, dependency-review and stale workflows.
+- Expanded coverage tests (dev format, buffered stream, tokens, `Log.String`,
+  terminal detection).
 ### Changed
+- CI consolidated into a single matrix workflow (gofmt · vet · `-race` + coverage
+  · golangci-lint v2 · govulncheck) on Go 1.23 and 1.24.
 
-- Added `golang.org/x/term` dependency for TTY detection
-
----
-
-## [1.0.0] - 2026-04-30
-
+## [1.0.1] - 2026-05-01
 ### Added
+- Static GitHub Pages API-documentation site generator (dependency-free
+  `go/doc` tool under `docs/gen`).
 
-- `New` HTTP middleware wrapping any `http.Handler`
-- Predefined formats: `Combined`, `Common`, `Dev`, `Short`, `Tiny`
-- `Dev` format with ANSI status colouring (green 2xx, cyan 3xx, yellow 4xx, red 5xx)
-- Token system with `Token()` for registering custom tokens
-- Built-in tokens: `:method`, `:url`, `:status`, `:date[clf|iso|web]`, `:remote-addr`, `:remote-user`, `:referrer`, `:user-agent`, `:http-version`, `:pid`, `:req[header]`, `:res[header]`, `:response-time[n]`, `:total-time[n]`
-- `Compile()` to pre-parse format strings into reusable `FormatFunc` values
-- `RegisterFormat()` and `RegisterFormatFunc()` for named custom formats
-- `Config` options: `Immediate`, `Skip`, `Stream`, `Buffer`
-- `FromRequest()` to populate a `Log` from a live `*http.Request`
-- `X-Forwarded-For` support for proxied remote addresses
-- Basic auth username extraction for `:remote-user`
-- Write buffering via `Config.Buffer` with timer-based flushing
-- CI workflows for build, test (with race detector and coverage), lint, deploy, and publish
+## [1.0.0]
+### Added
+- Initial release — morgan HTTP request logger for `net/http`: predefined
+  formats (combined, common, dev, short, tiny), a token compiler, and buffered
+  streaming.
+
+[Unreleased]: https://github.com/malcolmston/morgan/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/malcolmston/morgan/releases/tag/v1.0.2
+[1.0.1]: https://github.com/malcolmston/morgan/releases/tag/v1.0.1
+[1.0.0]: https://github.com/malcolmston/morgan/releases/tag/v1.0.0
