@@ -5,7 +5,6 @@
 [![Go Vuln](https://github.com/Malcolmston/morgan/actions/workflows/go-vuln.yml/badge.svg)](https://github.com/Malcolmston/morgan/actions/workflows/go-vuln.yml)
 [![Web Unit](https://github.com/Malcolmston/morgan/actions/workflows/web-unit.yml/badge.svg)](https://github.com/Malcolmston/morgan/actions/workflows/web-unit.yml)
 [![Web E2E](https://github.com/Malcolmston/morgan/actions/workflows/web-e2e.yml/badge.svg)](https://github.com/Malcolmston/morgan/actions/workflows/web-e2e.yml)
-[![CodeQL](https://github.com/Malcolmston/morgan/actions/workflows/codeql.yml/badge.svg)](https://github.com/Malcolmston/morgan/actions/workflows/codeql.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/malcolmston/morgan.svg)](https://pkg.go.dev/github.com/malcolmston/morgan)
 [![Go Report Card](https://goreportcard.com/badge/github.com/malcolmston/morgan)](https://goreportcard.com/report/github.com/malcolmston/morgan)
 [![Go Version](https://img.shields.io/github/go-mod/go-version/Malcolmston/morgan)](go.mod)
