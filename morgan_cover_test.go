@@ -6,9 +6,27 @@ import (
 	"net/http/httptest"
 	"os"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
+
+// syncBuffer is a goroutine-safe bytes.Buffer. bufferStream flushes from a timer
+// goroutine while the test reads the destination, so the shared sink must be
+// guarded — the library itself is correctly locked; this protects the *test's*
+// concurrent read of the underlying buffer.
+type syncBuffer struct {
+	mu sync.Mutex
+	b  bytes.Buffer
+}
+
+func (s *syncBuffer) Write(p []byte) (int, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.b.Write(p)
+}
+func (s *syncBuffer) String() string { s.mu.Lock(); defer s.mu.Unlock(); return s.b.String() }
+func (s *syncBuffer) Len() int       { s.mu.Lock(); defer s.mu.Unlock(); return s.b.Len() }
 
 // fixedDate is a deterministic timestamp used across the coverage tests:
 // 05 Mar 2024 06:21:42 UTC (day < 10 exercises pad2's zero-pad branch).
@@ -135,8 +153,8 @@ func TestTokensRendered(t *testing.T) {
 }
 
 func TestBufferStreamFlushes(t *testing.T) {
-	var buf bytes.Buffer
-	bs := newBufferStream(&buf, 20*time.Millisecond)
+	buf := &syncBuffer{}
+	bs := newBufferStream(buf, 20*time.Millisecond)
 	bs.Write([]byte("a\n"))
 	bs.Write([]byte("b\n"))
 	if buf.Len() != 0 {
@@ -155,9 +173,9 @@ func TestBufferStreamFlushes(t *testing.T) {
 }
 
 func TestBufferedMiddlewareEndToEnd(t *testing.T) {
-	var buf bytes.Buffer
+	buf := &syncBuffer{}
 	h := New(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(200) }),
-		Tiny, Config{Stream: &buf, Buffer: 20 * time.Millisecond})
+		Tiny, Config{Stream: buf, Buffer: 20 * time.Millisecond})
 	h.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/buf", nil))
 	time.Sleep(60 * time.Millisecond)
 	if !strings.Contains(buf.String(), "/buf") {
