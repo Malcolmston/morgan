@@ -1,17 +1,62 @@
 // Package morgan is an HTTP request logger middleware for net/http, ported from
-// the Node.js expressjs/morgan library.
+// the Node.js expressjs/morgan library (the request logger most commonly seen
+// mounted on Express applications). Like its namesake, morgan produces one
+// access-log line per HTTP request and derives the fields of that line by
+// expanding named tokens — :method, :url, :status, :response-time and so on —
+// against the request and the response it observed. The goal of the port is
+// behavioural parity: the same format names, the same token syntax, and the
+// same Common Log Format output, expressed idiomatically in Go and depending
+// only on the standard library.
 //
-// The central entry point is New, which wraps any http.Handler and writes one
-// log line per request. Output is controlled by a Format — either a predefined
-// constant (Combined, Common, Dev, Short, Tiny, JSON) or a raw format string
-// built from :token and :token[arg] placeholders. Formats are compiled into a
-// FormatFunc by Compile, and the set of available tokens can be extended at
-// runtime with Token. Named formats can be registered with RegisterFormat and
-// RegisterFormatFunc.
+// Use morgan when you want structured, human- or machine-readable access logs
+// for an HTTP service without adopting a heavier logging framework. It answers
+// the operational questions an access log exists to answer — who called what,
+// when, with which method and path, what status came back, how large the
+// response was, and how long it took — and it does so uniformly for every
+// handler it wraps. Typical uses are request auditing, latency spot-checks,
+// feeding an existing log pipeline, or simply having readable local output
+// during development.
 //
-// Behaviour such as the destination writer, buffered flushing, immediate
-// (on-request) logging and per-request skipping is configured through Config.
-// The package depends only on the standard library.
+// The central entry point is New, which wraps any http.Handler and returns a
+// new http.Handler that logs each request as it passes through. Internally New
+// substitutes a small responseRecorder for the real http.ResponseWriter so that
+// the status code, the response headers (and therefore the reported content
+// length), and the moment headers are flushed can be captured without the
+// wrapped handler being aware of it. Timing is measured around the call to the
+// inner handler, giving both :response-time (arrival to headers written) and
+// :total-time (arrival to fully written). Once the handler returns, the
+// collected values are assembled into a Log and the active FormatFunc renders
+// the final line.
+//
+// Output is controlled by a Format, which is either a predefined constant or a
+// raw format string. The predefined formats mirror Node morgan exactly:
+// Combined (Apache combined log format, the fullest line, including referrer
+// and user agent), Common (Apache common log format), Dev (concise output whose
+// :status is colored by response class — green 2xx, cyan 3xx, yellow 4xx, red
+// 5xx — for terminal use), Short (like common plus response time and without
+// the bracketed date), and Tiny (the minimal method/url/status/length/time
+// line). This port additionally offers JSON, which emits one JSON object per
+// request. Raw format strings use :token and :token[arg] placeholders; tokens
+// such as :req[header] and :res[header] take a bracket argument, and a missing
+// or empty token value renders as "-". Formats are compiled into a FormatFunc
+// by Compile, tokens are resolved from a live registry at render time, and the
+// token set can be extended at runtime with Token. Named formats can be added
+// with RegisterFormat (a format string) or RegisterFormatFunc (a FormatFunc).
+//
+// Behaviour beyond the format is configured through Config, and its options are
+// deliberately close to the Node API. Config.Stream sets the destination writer
+// (the analogue of morgan's stream option, defaulting to os.Stdout);
+// Config.Buffer enables interval-based buffered flushing (morgan's buffer
+// option); Config.Immediate writes the line on request arrival rather than on
+// response completion, trading away response fields such as status and length
+// for a guarantee the request is logged even if the handler never returns; and
+// Config.Skip is the equivalent of morgan's skip function, receiving the
+// request and the observed status and returning true to suppress the line.
+// Custom tokens (Token) and the compiled-format machinery (Compile, FormatFunc)
+// round out the parity. The most notable difference from the Node library is
+// naturally the type system: tokens receive a strongly typed Log rather than
+// loosely typed request/response objects, and Go's io.Writer stands in for a
+// Node writable stream.
 package morgan
 
 import (
