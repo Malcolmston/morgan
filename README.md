@@ -1,9 +1,11 @@
 # morgan
 
-[![Build](https://github.com/malcolmston/morgan/actions/workflows/build.yml/badge.svg)](https://github.com/malcolmston/morgan/actions/workflows/build.yml)
-[![Test](https://github.com/malcolmston/morgan/actions/workflows/test.yml/badge.svg)](https://github.com/malcolmston/morgan/actions/workflows/test.yml)
-[![Lint](https://github.com/malcolmston/morgan/actions/workflows/lint.yml/badge.svg)](https://github.com/malcolmston/morgan/actions/workflows/lint.yml)
+[![CI](https://github.com/Malcolmston/morgan/actions/workflows/ci.yml/badge.svg)](https://github.com/Malcolmston/morgan/actions/workflows/ci.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/malcolmston/morgan.svg)](https://pkg.go.dev/github.com/malcolmston/morgan)
+[![Go Report Card](https://goreportcard.com/badge/github.com/malcolmston/morgan)](https://goreportcard.com/report/github.com/malcolmston/morgan)
+[![Release](https://img.shields.io/github/v/release/Malcolmston/morgan?sort=semver)](https://github.com/Malcolmston/morgan/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Docs](https://img.shields.io/badge/docs-pages-2f9bff)](https://malcolmston.github.io/morgan/)
 
 HTTP request logger middleware for Go — a port of the Node.js [morgan](https://github.com/expressjs/morgan) library.
 
