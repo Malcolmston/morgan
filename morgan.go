@@ -1,3 +1,17 @@
+// Package morgan is an HTTP request logger middleware for net/http, ported from
+// the Node.js expressjs/morgan library.
+//
+// The central entry point is New, which wraps any http.Handler and writes one
+// log line per request. Output is controlled by a Format — either a predefined
+// constant (Combined, Common, Dev, Short, Tiny, JSON) or a raw format string
+// built from :token and :token[arg] placeholders. Formats are compiled into a
+// FormatFunc by Compile, and the set of available tokens can be extended at
+// runtime with Token. Named formats can be registered with RegisterFormat and
+// RegisterFormatFunc.
+//
+// Behaviour such as the destination writer, buffered flushing, immediate
+// (on-request) logging and per-request skipping is configured through Config.
+// The package depends only on the standard library.
 package morgan
 
 import (

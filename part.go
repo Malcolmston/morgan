@@ -10,6 +10,8 @@ import (
 // IP represents an IP address as a slice of bytes.
 type IP []byte
 
+// String returns the textual form of the IP address, or "<nil>" when the
+// address is empty. It matches the formatting of net.IP.String.
 func (ip IP) String() string {
 	return net.IP(ip).String()
 }
