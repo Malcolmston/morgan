@@ -95,11 +95,16 @@ test('every link is valid (internal targets exist, external links are safe)', as
         const rel = (await a.getAttribute('rel')) ?? '';
         expect(rel, `external link ${href} must have rel*=noopener`).toContain('noopener');
       } else if (href.startsWith('#')) {
-        // Internal: must map to a known tab or an in-page element id.
+        // Internal: must map to a known tab, a DocsApp package route
+        // (#pkg/<importPath>, hash-routed by the React reference), or an
+        // in-page element id. getElementById is used rather than a CSS locator
+        // because symbol/route hashes contain "/" and "." (invalid selectors).
         const target = href.slice(1);
         const isTab = (TAB_IDS as readonly string[]).includes(target);
-        const targetExists = (await page.locator(`#${target}`).count()) > 0;
-        expect(isTab || targetExists, `#${id}: internal link "${href}" maps to nothing`).toBeTruthy();
+        const isDocsRoute = target.startsWith('pkg/');
+        let ok = isTab || isDocsRoute;
+        if (!ok) ok = await page.evaluate((t) => !!document.getElementById(t), target);
+        expect(ok, `#${id}: internal link "${href}" maps to nothing`).toBeTruthy();
       } else if (href === './api/') {
         // The generated API reference, published alongside this site under
         // /morgan/api/. It is produced by the Go doc generator at deploy time,
@@ -112,6 +117,17 @@ test('every link is valid (internal targets exist, external links are safe)', as
       }
     }
   }
+});
+
+test('docs tab renders the React API reference with a package listed', async ({ page }) => {
+  await gotoTab(page, 'docs');
+  // DocsApp fetches doc.json and renders a package sidebar; assert the actual
+  // rendered reference (at least one package + a package view), not just a link.
+  // morgan is a single-package module, so at least one package link is expected.
+  const pkgLinks = page.locator('#view-docs .docs-nav .docs-pkg-link');
+  await expect(pkgLinks.first()).toBeVisible();
+  expect(await pkgLinks.count(), 'expected at least one package in the reference').toBeGreaterThanOrEqual(1);
+  await expect(page.locator('#view-docs .pkg-view .pkg-title').first()).toBeVisible();
 });
 
 test('internal tab links actually navigate to their view', async ({ page }) => {
