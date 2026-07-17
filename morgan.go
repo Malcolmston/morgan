@@ -36,12 +36,15 @@
 // 5xx — for terminal use), Short (like common plus response time and without
 // the bracketed date), and Tiny (the minimal method/url/status/length/time
 // line). This port additionally offers JSON, which emits one JSON object per
-// request. Raw format strings use :token and :token[arg] placeholders; tokens
-// such as :req[header] and :res[header] take a bracket argument, and a missing
-// or empty token value renders as "-". Formats are compiled into a FormatFunc
-// by Compile, tokens are resolved from a live registry at render time, and the
-// token set can be extended at runtime with Token. Named formats can be added
-// with RegisterFormat (a format string) or RegisterFormatFunc (a FormatFunc).
+// request. Raw format strings use :token and :token[arg] placeholders. Fifteen tokens are
+// predefined — among them :method, :url, :status, :response-time, :total-time,
+// :remote-addr, :remote-user, :referrer, :user-agent, :http-version, :pid and
+// :incoming, plus the argument-taking :date[clf|iso|web], :req[header] and
+// :res[header] — and a missing or empty token value renders as "-". Formats are
+// compiled into a FormatFunc by Compile, tokens are resolved from a live
+// registry at render time, and the token set can be extended at runtime with
+// Token. Named formats can be added with RegisterFormat (a format string) or
+// RegisterFormatFunc (a FormatFunc).
 //
 // Behaviour beyond the format is configured through Config, and its options are
 // deliberately close to the Node API. Config.Stream sets the destination writer
