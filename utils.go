@@ -23,6 +23,53 @@ func isTerminal(w io.Writer) bool {
 	return fi.Mode()&os.ModeCharDevice != 0
 }
 
+// escapeLogField escapes control characters (U+0000–U+001F and U+007F) and
+// backslashes so that a value taken from an untrusted source (for example the
+// Basic-auth username surfaced by :remote-user) cannot inject newlines or other
+// control sequences into a line-oriented access log. It reproduces exactly the
+// escaping performed by the Node.js morgan escapeLogField helper: the common
+// whitespace controls render as their C-style escapes (\b \f \n \r \t), a
+// literal backslash doubles to \\, and every other control character (including
+// DEL) renders as a lowercase four-digit \uXXXX sequence. All other runes,
+// including multi-byte UTF-8, pass through unchanged.
+func escapeLogField(s string) string {
+	needsEscape := false
+	for i := 0; i < len(s); i++ {
+		if c := s[i]; c < 0x20 || c == 0x7f || c == '\\' {
+			needsEscape = true
+			break
+		}
+	}
+	if !needsEscape {
+		return s
+	}
+
+	var b strings.Builder
+	for _, r := range s {
+		switch r {
+		case '\\':
+			b.WriteString(`\\`)
+		case '\b':
+			b.WriteString(`\b`)
+		case '\f':
+			b.WriteString(`\f`)
+		case '\n':
+			b.WriteString(`\n`)
+		case '\r':
+			b.WriteString(`\r`)
+		case '\t':
+			b.WriteString(`\t`)
+		default:
+			if r < 0x20 || r == 0x7f {
+				fmt.Fprintf(&b, `\u%04x`, r)
+			} else {
+				b.WriteRune(r)
+			}
+		}
+	}
+	return b.String()
+}
+
 // FormatDuration formats a duration as milliseconds with the given number of decimal digits.
 func FormatDuration(d time.Duration, digits int) string {
 	ms := float64(d) / float64(time.Millisecond)
