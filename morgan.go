@@ -173,7 +173,10 @@ func New(next http.Handler, format Format, cfg Config) http.Handler {
 		start := time.Now()
 
 		if cfg.Immediate {
-			log := FromRequest(r, 0, 0, 0)
+			// Negative durations mark the timing as unavailable: in immediate
+			// mode the response has not started, so :response-time and
+			// :total-time render "-" exactly as Node morgan does.
+			log := FromRequest(r, 0, -1, -1)
 			if cfg.Skip == nil || !cfg.Skip(r, 0) {
 				if line := formatFn(r, log); line != "" {
 					fmt.Fprintln(out, line)

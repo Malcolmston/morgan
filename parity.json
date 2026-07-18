@@ -1,0 +1,10 @@
+{
+  "repo": "morgan",
+  "upstream": "expressjs/morgan",
+  "parityBefore": "81%",
+  "parityAfter": "100%",
+  "upstreamCasesSynced": 54,
+  "gapsFound": 3,
+  "gapsClosed": 3,
+  "asOf": "2026-07-18"
+}

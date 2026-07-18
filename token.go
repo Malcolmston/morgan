@@ -60,8 +60,12 @@ func init() {
 		return log.REMOTE_IP.String()
 	})
 
+	// :remote-user — the Basic-auth username, with control characters and
+	// backslashes escaped so a hostile Authorization header cannot inject
+	// newlines or forge additional log lines (matching Node morgan's use of
+	// escapeLogField on the credential name).
 	Token("remote-user", func(_ *http.Request, log Log, _ ...string) string {
-		return log.REMOTE_USER
+		return escapeLogField(log.REMOTE_USER)
 	})
 
 	Token("user-agent", func(_ *http.Request, log Log, _ ...string) string {
@@ -73,7 +77,13 @@ func init() {
 	})
 
 	// :response-time[digits] — ms from request arrival to response headers written.
+	// A negative duration marks the timing as unavailable (for example under
+	// Config.Immediate, before any response has started) and renders empty,
+	// matching Node morgan's undefined-to-"-" behaviour.
 	Token("response-time", func(_ *http.Request, log Log, args ...string) string {
+		if log.RESPONSE_TIME < 0 {
+			return ""
+		}
 		digits := 3
 		if len(args) > 0 {
 			if d, err := strconv.Atoi(args[0]); err == nil {
@@ -84,7 +94,12 @@ func init() {
 	})
 
 	// :total-time[digits] — ms from request arrival to response fully written.
+	// A negative duration marks the timing as unavailable and renders empty,
+	// matching Node morgan's undefined-to-"-" behaviour.
 	Token("total-time", func(_ *http.Request, log Log, args ...string) string {
+		if log.TOTAL_TIME < 0 {
+			return ""
+		}
 		digits := 3
 		if len(args) > 0 {
 			if d, err := strconv.Atoi(args[0]); err == nil {
@@ -98,6 +113,8 @@ func init() {
 	//   clf  — "27/Nov/2024:06:21:42 +0000"   (Common Log Format)
 	//   iso  — "2024-11-27T06:21:42.000Z"      (ISO 8601 / RFC 3339)
 	//   web  — "Wed, 27 Nov 2024 06:21:42 GMT" (RFC 1123, default)
+	// An unrecognised argument renders empty (which the compiler turns into "-"),
+	// matching Node morgan where the switch falls through to undefined.
 	Token("date", func(_ *http.Request, log Log, args ...string) string {
 		t := log.DATE
 		if t.IsZero() {
@@ -112,8 +129,10 @@ func init() {
 			return clfdate(t)
 		case "iso":
 			return t.UTC().Format("2006-01-02T15:04:05.000Z07:00")
-		default: // "web"
+		case "web":
 			return t.UTC().Format("Mon, 02 Jan 2006 15:04:05 GMT")
+		default:
+			return ""
 		}
 	})
 
