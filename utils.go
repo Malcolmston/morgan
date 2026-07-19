@@ -140,6 +140,9 @@ func newBufferStream(out io.Writer, interval time.Duration) io.Writer {
 	return &bufferStream{out: out, interval: interval}
 }
 
+// Write implements io.Writer. It appends p to the in-memory buffer and, if no
+// flush is pending, schedules one after the configured interval; it returns
+// len(p) without writing to the underlying writer immediately.
 func (bs *bufferStream) Write(p []byte) (int, error) {
 	bs.mu.Lock()
 	defer bs.mu.Unlock()
