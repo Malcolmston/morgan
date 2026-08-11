@@ -13,7 +13,7 @@
 [![Code Size](https://img.shields.io/github/languages/code-size/Malcolmston/morgan)](https://github.com/Malcolmston/morgan)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![Docs](https://img.shields.io/badge/docs-pages-2f9bff)](https://malcolmston.github.io/morgan/)
+[![Docs](https://img.shields.io/badge/docs-vercel-2f9bff)](https://go-malcolms-projects-18e573c3.vercel.app/lib/morgan)
 
 HTTP request logger middleware for Go — a port of the Node.js [morgan](https://github.com/expressjs/morgan) library.
 
@@ -83,8 +83,38 @@ morgan.New(mux, morgan.Combined, morgan.Config{
 
     // Buffer writes and flush on this interval. Zero = no buffering.
     Buffer: time.Second,
+
+    // Honour X-Forwarded-For / X-Forwarded-Proto for :remote-addr and
+    // :protocol. Off by default — see "Running behind a proxy" below.
+    TrustProxy: false,
 })
 ```
+
+Writes to `Stream` are serialised internally, so concurrent requests never
+interleave and an unsynchronised writer (`bytes.Buffer`, an `*os.File` you
+opened) is safe to pass in.
+
+---
+
+## Running behind a proxy
+
+`:remote-addr` reports the peer address from the connection. `X-Forwarded-For` is
+**ignored by default**, because any client on a direct connection can set it and
+thereby choose the address recorded against its own requests. `X-Forwarded-Proto`,
+which backs `:protocol`, is gated the same way.
+
+```go
+morgan.New(mux, morgan.Combined, morgan.Config{TrustProxy: true})
+```
+
+Only enable this when every request necessarily arrives through a reverse proxy
+you control that *overwrites* those headers. This mirrors Express, whose
+`trust proxy` setting is likewise off by default and which morgan's `:remote-addr`
+consults through `req.ip`.
+
+The standalone helpers follow the same rule: `morgan.ClientIP` /
+`morgan.RequestProtocol` never trust the headers, `morgan.ClientIPTrustProxy` /
+`morgan.RequestProtocolTrustProxy` do.
 
 ---
 
@@ -101,15 +131,24 @@ Format strings use `:name` or `:name[arg]` syntax. Unknown tokens render as `-`.
 | `:method` | HTTP method |
 | `:pid` | Server process ID |
 | `:referrer` | `Referer` / `Referrer` request header |
-| `:remote-addr` | Client IP (`X-Forwarded-For` takes precedence) |
+| `:remote-addr` | Client IP (`X-Forwarded-For` only with `TrustProxy`) |
 | `:remote-user` | Basic auth username |
 | `:req[header]` | Any named request header |
 | `:res[header]` | Any named response header |
 | `:response-time[n]` | ms from request arrival to response headers written (default 3 d.p.) |
 | `:status` | HTTP status code |
 | `:total-time[n]` | ms from request arrival to response fully written (default 3 d.p.) |
-| `:url` | Request path and query string |
+| `:url` | Request target as received (percent-encoding preserved) |
 | `:user-agent` | `User-Agent` header |
+| `:incoming` | Request body size from `Content-Length` |
+| `:protocol` | `http` or `https` |
+| `:host` | `Host` header |
+| `:path` | Path component only, without the query string |
+| `:query` | Raw query string, without the leading `?` |
+
+Full reference: [`docs/tokens.md`](docs/tokens.md). Task-oriented snippets:
+[`docs/recipes.md`](docs/recipes.md). Differences from the Node library:
+[`API-DEVIATIONS.md`](API-DEVIATIONS.md).
 
 ### Custom format string
 
@@ -172,6 +211,43 @@ line := fn(r, log)
 ```
 
 Tokens registered after `Compile` is called are still resolved at render time.
+
+---
+
+## Skip helpers
+
+Ready-made `SkipFunc` values for the common policies, composable with
+`CombineSkips` (a logical OR):
+
+```go
+morgan.New(mux, morgan.Combined, morgan.Config{
+    Skip: morgan.CombineSkips(
+        morgan.SkipPaths("/healthz", "/metrics"),
+        morgan.SkipUserAgents("kube-probe", "ELB-HealthChecker"),
+        morgan.SkipStatusBelow(400),
+    ),
+})
+```
+
+| Helper | Suppresses |
+|---|---|
+| `SkipStatusBelow(min)` | Any status below `min` |
+| `SkipStatusBetween(lo, hi)` | Any status in `[lo, hi]` |
+| `SkipPaths(paths...)` | Exact `r.URL.Path` matches |
+| `SkipUserAgents(subs...)` | `User-Agent` containing any substring (case-insensitive) |
+| `CombineSkips(fns...)` | Whenever any of `fns` would |
+
+---
+
+## Streaming, WebSockets and HTTP/2
+
+The `http.ResponseWriter` morgan substitutes exposes exactly the optional
+interfaces the underlying writer implements — `http.Flusher`, `http.Hijacker`,
+`http.Pusher`, `io.ReaderFrom` — and implements `Unwrap()` so
+`http.NewResponseController` reaches the rest. Streaming responses, protocol
+upgrades, server push and `http.ServeContent`'s sendfile path all work through the
+middleware, and handlers that feature-detect before using them still get a
+truthful answer.
 
 ---
 
